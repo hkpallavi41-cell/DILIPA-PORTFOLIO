@@ -359,21 +359,21 @@
       font-weight: 500;
     }
 
+    /* FULL-BLEED ARCHITECTURAL IMAGE GALLERY */
     .detail-media-gallery {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 2.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 3.5rem;
       width: 100%;
       margin: 1.5rem 0 3rem 0;
     }
     .detail-media-figure {
-      background: #ffffff;
+      background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius);
       box-shadow: var(--shadow-base);
       overflow: hidden;
       width: 100%;
-      min-height: 520px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -382,7 +382,7 @@
       position: relative;
     }
     .detail-media-figure:hover {
-      transform: translateY(-4px);
+      transform: translateY(-3px);
       box-shadow: var(--shadow-elevated);
       border-color: var(--accent);
     }
@@ -402,7 +402,6 @@
       color: #9f3a38;
       text-align: center;
       font-size: 0.95rem;
-      grid-column: span 2;
     }
 
     .static-section { padding: 7.5rem 0; border-bottom: 1px solid var(--border); }
@@ -575,8 +574,7 @@
     @media (max-width: 900px) {
       .container { padding: 0 1.5rem; }
       .about-layout, .contact-layout { grid-template-columns: 1fr; gap: 3rem; }
-      .detail-media-gallery, .catalog-grid { grid-template-columns: 1fr; gap: 2rem; }
-      .detail-media-figure { grid-column: span 2; }
+      .catalog-grid { grid-template-columns: 1fr; gap: 2rem; }
       .nav-links { display: none; }
       .static-section { padding: 5rem 0; }
     }
@@ -633,12 +631,12 @@
             </div>
             <div class="meta-group">
               <h4>Core Competencies</h4>
-              <p>Conceptual designing,Working Drawings, Detail Detailing, Site Coordination & 3D Visualization</p>
+              <p>Conceptual designing, Working Drawings, Detail Detailing, Site Coordination & 3D Visualization</p>
             </div>
           </div>
           <div class="about-narrative">
             <p>
-              An evolving practice grounded in design,documentation,and on site execution.My work spans residential,institutional,and masterplanning projects,with a focus on contextual design and buildable architecture. 
+              An evolving practice grounded in design, documentation, and on site execution. My work spans residential, institutional, and masterplanning projects, with a focus on contextual design and buildable architecture.
             </p>
             <p style="font-size: 1.15rem; color: var(--text-muted);">
               Use the two primary portals directly below to explore full project documentation sets and dedicated 3D visualization project dossiers.
@@ -762,7 +760,7 @@
             </div>
             <h2 class="portal-title">PROJECTS</h2>
             <p class="portal-desc">
-              Architectural design proposals, institutional masterplans, thesis research, temporary laborer housing prototypes, and residential construction drawing packages[cite: 3, 11, 12, 18].
+              Architectural design proposals, institutional masterplans, thesis research, temporary laborer housing prototypes, and residential construction drawing packages.
             </p>
           </div>
           <span class="item-cta" style="margin-top: 2rem;">Explore All Projects &rarr;</span>
@@ -800,7 +798,7 @@
     </div>
   </main>
 
-  <!-- VIEW 4: INDIVIDUAL PROJECT PAGE (Read-Only Fields Driven by Code) -->
+  <!-- VIEW 4: INDIVIDUAL PROJECT PAGE -->
   <main id="route-project-detail" class="page-view">
     <div class="container">
       <div class="page-top-nav">
@@ -818,7 +816,6 @@
             <p id="proj-detail-description"></p>
           </div>
           
-          <!-- Read-Only Meta Sidebar Driven Exclusively By Code -->
           <div class="sidebar-meta-grid" id="proj-detail-meta-grid"></div>
         </div>
 
@@ -836,14 +833,14 @@
       <span class="section-eyebrow">CGI Production</span>
       <h1 class="page-title">Architecture Visualization</h1>
       <p class="page-subtitle">
-        Click any project below to inspect all its architectural visualization plates, renders, and drawings rendered directly from its PDF dossier.
+        Click any project below to inspect all its architectural visualization plates, renders, and drawings.
       </p>
 
       <div class="catalog-grid" id="visualization-list-container"></div>
     </div>
   </main>
 
-  <!-- VIEW 6: INDIVIDUAL VISUALIZATION PROJECT PAGE (Status Field Removed) -->
+  <!-- VIEW 6: INDIVIDUAL VISUALIZATION PROJECT PAGE -->
   <main id="route-visualization-detail" class="page-view">
     <div class="container">
       <div class="page-top-nav">
@@ -873,7 +870,6 @@
               <h5>Scope of Work</h5>
               <p id="vis-detail-scope">3D VISUALIZATION</p>
             </div>
-            <!-- Status field permanently removed -->
           </div>
         </div>
 
@@ -899,55 +895,81 @@
   <script>
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-    /* REUSABLE PDF PAGE RENDERER */
-    async function renderAllPdfPagesToContainer(pdfUrl, containerElement, scaleMultiplier = 2.2) {
+    /* FULL-BLEED ARCHITECTURAL SHEET RENDERER */
+    async function renderAllPdfPagesToContainer(pdfUrl, containerElement, scaleMultiplier = 1.45) {
+      containerElement.innerHTML = '<div style="padding: 40px; text-align: center; color: var(--text-muted); font-size: 1.05rem;">Streaming project presentation...</div>';
+
       try {
         const loadingTask = pdfjsLib.getDocument({
           url: encodeURI(pdfUrl),
+          rangeChunkSize: 65536,
+          disableAutoFetch: true,
+          disableStream: false,
           cMapUrl: 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/cmaps/',
           cMapPacked: true
         });
         const pdf = await loadingTask.promise;
+        containerElement.innerHTML = '';
 
         for (let pageNo = 1; pageNo <= pdf.numPages; pageNo++) {
-          const page = await pdf.getPage(pageNo);
-          const viewport = page.getViewport({ scale: scaleMultiplier });
-
           const fig = document.createElement('figure');
           fig.className = 'detail-media-figure';
           fig.title = 'Click to inspect in high resolution';
 
           const canvas = document.createElement('canvas');
-          canvas.height = viewport.height;
-          canvas.width = viewport.width;
-
-          const renderContext = {
-            canvasContext: canvas.getContext('2d'),
-            viewport: viewport
-          };
-          await page.render(renderContext).promise;
-
-          fig.onclick = function() {
-            openLightboxFromCanvas(canvas);
-          };
-
+          canvas.style.display = 'none';
           fig.appendChild(canvas);
           containerElement.appendChild(fig);
+
+          const renderSheet = async () => {
+            try {
+              const page = await pdf.getPage(pageNo);
+              const viewport = page.getViewport({ scale: scaleMultiplier });
+              canvas.height = viewport.height;
+              canvas.width = viewport.width;
+
+              await page.render({
+                canvasContext: canvas.getContext('2d'),
+                viewport: viewport
+              }).promise;
+
+              canvas.style.display = 'block';
+              fig.onclick = () => openLightboxFromCanvas(canvas);
+            } catch (err) {
+              console.error(`Error rendering sheet ${pageNo}:`, err);
+            }
+          };
+
+          if (pageNo === 1) {
+            await renderSheet();
+          } else {
+            const observer = new IntersectionObserver((entries, obs) => {
+              if (entries[0].isIntersecting) {
+                renderSheet();
+                obs.disconnect();
+              }
+            }, { rootMargin: '400px' });
+            observer.observe(fig);
+          }
         }
       } catch (err) {
-        console.warn(`Error loading PDF "${pdfUrl}":`, err);
-        const errBanner = document.createElement('div');
-        errBanner.className = 'pdf-error-banner';
-        errBanner.innerHTML = `<strong>File Not Found:</strong> Could not load <code>${pdfUrl}</code>.<br><small>Make sure the file is in your website folder and that Live Server is running.</small>`;
-        containerElement.appendChild(errBanner);
+        console.warn(`Error loading plates "${pdfUrl}":`, err);
+        containerElement.innerHTML = `
+          <div class="pdf-error-banner">
+            <strong>Drawing set unavailable:</strong> Could not load <code>${pdfUrl}</code>.<br>
+            <small>Verify that the file exists in your repository.</small>
+          </div>
+        `;
       }
     }
 
     /* Renders Page 1 of any PDF as a Sharp Cover Thumbnail */
-    async function renderPdfThumbnail(pdfUrl, targetCanvas, scaleMultiplier = 1.0) {
+    async function renderPdfThumbnail(pdfUrl, targetCanvas, scaleMultiplier = 0.4) {
       try {
         const loadingTask = pdfjsLib.getDocument({
           url: encodeURI(pdfUrl),
+          disableAutoFetch: true,
+          disableStream: true,
           cMapUrl: 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/cmaps/',
           cMapPacked: true
         });
@@ -972,16 +994,12 @@
         ctx.fillStyle = '#9a653d';
         ctx.font = '700 13px Plus Jakarta Sans, sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText('PDF PREVIEW', targetCanvas.width / 2, targetCanvas.height / 2);
+        ctx.fillText('DRAWING SET', targetCanvas.width / 2, targetCanvas.height / 2);
       }
     }
 
-    /* ━━━━━━━━━━━━━━━━━━━━ PROJECTS DATA (EDITABLE IN CODE) ━━━━━━━━━━━━━━━━━━━━
-       You can add, edit, or delete any field inside "metaFields" for any project.
-       Each project can have its own unique custom field labels and values.
-    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    /* ━━━━━━━━━━━━━━━━━━━━ PROJECTS DATA ━━━━━━━━━━━━━━━━━━━━ */
     const projects = [
-      // 1. Puravankara Hennur
       {
         id: "puravankara-hennur",
         title: "Puravankara Hennur",
@@ -993,10 +1011,9 @@
           { label: "Category", value: "High-Rise Residential APPARTMENT" },
           { label: "Location", value: "Hennur Road Bengaluru" },
           { label: "Scope of Work", value: "Master Planning, 26-Storey Tower Planning, Unit Planning, Facade design" },
-          {label:"status",value:"Under Construction"}
+          { label: "status", value: "Under Construction" }
         ]
       },
-      // 2. Unicorn Terraces
       {
         id: "unicorn-terraces",
         title: "Unicorn Terraces",
@@ -1009,10 +1026,9 @@
           { label: "Category", value: "English Classical Row Houses & Masterplanning" },
           { label: "Location", value: "Bengaluru, India" },
           { label: "Scope of Work", value: "Masterplan Zoning, Villa designs, Construction Detailing" },
-          {label:"status",value:"Under Construction"}
+          { label: "status", value: "Under Construction" }
         ]
       },
-      // 3. Puravankara Richmond
       {
         id: "puravankara-richmond",
         title: "Puravankara Richmond",
@@ -1024,10 +1040,9 @@
           { label: "Category", value: "Commercial High-Rise Architecture" },
           { label: "Location", value: "Richmond Road / Residency Road, Bengaluru" },
           { label: "Scope of Work", value: "Commercial Footprint, Multi-Level Core Planning, Facade Engineering" },
-          {label:"status",value:"CONCEPTUAL"}
+          { label: "status", value: "CONCEPTUAL" }
         ]
       },
-      // 4. SNN Estates Antara
       {
         id: "snn-estates-antara",
         title: "SNN Estates Antara",
@@ -1039,10 +1054,9 @@
           { label: "Category", value: "Residential Masterplanning & Villa Design" },
           { label: "Location", value: "Bengaluru, Karnataka" },
           { label: "Scope of Work", value: "Masterplan Circulation, Topography Analysis, Villa Typologies, Clubhouse" },
-          {label:"status",value:"CONCEPTUAL"}
+          { label: "status", value: "CONCEPTUAL" }
         ]
       },
-      // 5. Anand Residency
       {
         id: "anand-residence",
         title: "Anand Residency",
@@ -1054,11 +1068,9 @@
           { label: "Category", value: "Luxury Residential Architecture" },
           { label: "Location", value: "Epsilon Residential Villas, Bangalore" },
           { label: "Scope of Work", value: "Zoning Schemes, Floor Plans, Working Drawings, Concrete Detailing" },
-          {label:"status",value:"BUILT"}
-
+          { label: "status", value: "BUILT" }
         ]
       },
-      // 6. Khosla Associates Works
       {
         id: "khosla-associates-works",
         title: "Khosla Associates Works",
@@ -1073,7 +1085,6 @@
           { label: "Scope of Work", value: "Working Drawing Sets, Site Documentation, Detail Drawings, Staircase Details" }
         ]
       },
-      // 7. UVCE Campus
       {
         id: "uvce-campus-masterplan",
         title: "UVCE Campus",
@@ -1085,10 +1096,9 @@
           { label: "Category", value: "Institutional Masterplanning & Architecture" },
           { label: "Location", value: "Jnanabharathi, Bengaluru, Karnataka" },
           { label: "Scope of Work", value: "Radial Zoning, Academic Blocks designing, Lecture complex designing, Visualization" },
-          {label:"status",value:"CONCEPTUAL"}
+          { label: "status", value: "CONCEPTUAL" }
         ]
       },
-      // 8. The Forgotten Empire
       {
         id: "the-forgotten-empire",
         title: "The Forgotten Empire",
@@ -1103,7 +1113,6 @@
           { label: "Scope of Work", value: "B.ARCH THESIS PROJECT" }
         ]
       },
-      // 9. College Campus
       {
         id: "management-college-campus",
         title: "College Campus",
@@ -1120,9 +1129,8 @@
       }
     ];
 
-    /* ━━━━━━━━━━━━━━━━━━━━ ARCHITECTURE VISUALIZATION (Status Field Removed) ━━━━━━━━━━━━━━━━━━━━ */
+    /* ━━━━━━━━━━━━━━━━━━━━ ARCHITECTURE VISUALIZATION ━━━━━━━━━━━━━━━━━━━━ */
     const architectureVisualizations = [
-      // 1. DNR Commercial
       {
         id: "vis-dnr-commercial",
         title: "DNR Commercial",
@@ -1131,7 +1139,6 @@
         desc: "Comprehensive visualization suite for DNR Commercial tech park, displaying curvilinear solar glass facades, bridge links, ground-level retail spaces, and reflective water features.",
         pdfFile: "DNR COMMERCIAL.pdf"
       },
-      // 2. DNR Residential Towers
       {
         id: "vis-dnr-residential-towers",
         title: "DNR Residential Towers",
@@ -1140,7 +1147,6 @@
         desc: "Exterior and amenity visualization for DNR Residential Towers, highlighting dynamic roofline structures, pedestrian circulation, tennis courts, and landscaped ground-level gathering areas.",
         pdfFile: "DNR RESIDENTIAL TOWERS.pdf"
       },
-      // 3. Ramaiah University
       {
         id: "vis-ramaiah-university",
         title: "Ramaiah University",
@@ -1149,7 +1155,6 @@
         desc: "Institutional campus visualization detailing academic departmental blocks, amphitheater seating steps, reflecting lily ponds, and tree-lined student walkways.",
         pdfFile: "ramaiah university.pdf"
       },
-      // 4. Purvankara Richmond Town
       {
         id: "vis-purvankara-richmond-town",
         title: "Purvankara Richmond Town",
@@ -1158,7 +1163,6 @@
         desc: "Commercial corporate high-rise visual package detailing sweeping curved curtain walls, entrance arrival courts, drop-off canopies, and urban street integration.",
         pdfFile: "PURAVANKRA OFFICE RICHMOND TOWN.pdf"
       },
-      // 5. Puravankara Hennur
       {
         id: "vis-purvankara-hennur",
         title: "Puravankara Hennur",
@@ -1167,7 +1171,6 @@
         desc: "Residential skyscraper visual suite presenting 26-storey towers with landscaped sky decks, podium clubhouse facilities, approach boulevards, and dusk lighting.",
         pdfFile: "PURAVANKRA HENNUR_visuals.pdf"
       },
-      // 6. Settukunnu Resort
       {
         id: "vis-settukunnu-resort",
         title: "Settukunnu Resort",
@@ -1176,7 +1179,6 @@
         desc: "Eco-hospitality visualization showcasing terraced villas built into natural sloping hillsides, private lap pools, viewing pavilions, and tropical tree cover.",
         pdfFile: "Settukunnu Resort.pdf"
       },
-      // 7. Timberleaf Farms
       {
         id: "vis-timberleaf-farms",
         title: "Timberleaf Farms",
@@ -1185,7 +1187,6 @@
         desc: "Expansive agro-residential masterplan visualization presenting tree-lined avenue roads, country farm cottages, leisure swimming pools, and community pavilions.",
         pdfFile: "TIMBERLEAF FARMS.pdf"
       },
-      // 8. UVCE Visuals
       {
         id: "vis-uvce",
         title: "UVCE Visuals",
@@ -1194,7 +1195,6 @@
         desc: "Architectural representations of the UVCE masterplan, featuring radial departmental buildings, the central biodiversity park, clock tower circle, and student plazas.",
         pdfFile: "UVCE_VIZUALS.pdf"
       },
-      // 9. Vishnu Forge Interiors
       {
         id: "vis-vishnu-forge-interiors",
         title: "Vishnu Forge Interiors",
@@ -1203,7 +1203,6 @@
         desc: "Full interior visualization package displaying modern reception lounges, feature metal staircases, client presentation rooms, open-plan workstations, and industrial storage areas.",
         pdfFile: "vishnu Forge interiors.pdf"
       },
-      // 10. Purva Skyee
       {
         id: "vis-purva-sky",
         title: "Purva Skyee",
@@ -1212,7 +1211,6 @@
         desc: "Tower visualization highlighting high-altitude observation terraces, reflective glass envelopes, luxury lounge decks, and urban night vistas.",
         pdfFile: "Purva Skyee.pdf"
       },
-      // 11. Glenz Basaveshwaranagar
       {
         id: "vis-glenz-business",
         title: "Glenz Basaveshwaranagar",
@@ -1221,7 +1219,6 @@
         desc: "Complete architectural visualization package for Glen's Bakehouse in Basaveshwara Nagar, covering exterior cafe facades, outdoor terrace seating, and warm interior dining spaces.",
         pdfFile: "GLENS BASAWESHVARANAGAR.pdf"
       },
-      // 12. Frangipani Residency
       {
         id: "vis-frangipani-residence",
         title: "Frangipani Residency",
@@ -1230,7 +1227,6 @@
         desc: "Photorealistic CGI series for Frangipani Residence showing extensive rooftop landscaping, reflecting pools, timber decking, and indoor-outdoor spatial transitions.",
         pdfFile: "FRANGIPANI RESIDENCE.pdf"
       },
-      // 13. Sarathy Residency
       {
         id: "vis-sarathy-residence",
         title: "Sarathy Residency",
@@ -1239,7 +1235,6 @@
         desc: "Modern multi-storey private villa visualization featuring staggered cantilevered balconies, integrated planter boxes, stilt parking, and detailed wood-and-stone textures.",
         pdfFile: "SARATHY RESIDENCE.pdf"
       },
-      // 14. Interior Renders
       {
         id: "vis-interior-designs",
         title: "Interior Renders",
@@ -1248,7 +1243,6 @@
         desc: "Curated collection of residential and commercial interior spaces, highlighting bespoke millwork, Italian marble, warm textiles, and custom illumination.",
         pdfFile: "interiors.pdf"
       },
-      // 15. AB&T
       {
         id: "vis-abt",
         title: "AB&T",
@@ -1291,7 +1285,6 @@
       { name: "Site Coordination", icon: "check-circle" }
     ];
 
-    /* DIRECT SWITCH TO HOMEPAGE PORTFOLIO SECTION */
     function navigateToHomePortals() {
       document.querySelectorAll('.page-view').forEach(view => view.classList.remove('active-route'));
       document.getElementById('route-home').classList.add('active-route');
@@ -1303,7 +1296,6 @@
       }
     }
 
-    /* FULLSCREEN LIGHTBOX LOGIC */
     let currentZoom = 1;
     let isPanning = false;
     let startX = 0, startY = 0, translateX = 0, translateY = 0;
@@ -1411,7 +1403,7 @@
       window.scrollTo(0, 0);
     }
 
-    /* PROJECT DETAIL VIEW (Clean Read-Only Display Driven by Code) */
+    /* PROJECT DETAIL VIEW */
     async function showProjectDetail(id) {
       const idx = projects.findIndex(p => p.id === id);
       if (idx === -1) {
@@ -1427,7 +1419,6 @@
       document.getElementById('proj-detail-heading').textContent = proj.heading || "Project Concept & Scope";
       document.getElementById('proj-detail-description').textContent = proj.desc;
 
-      // Render metadata fields dynamically from the code array
       const grid = document.getElementById('proj-detail-meta-grid');
       grid.innerHTML = '';
 
@@ -1452,10 +1443,10 @@
       gallery.innerHTML = '';
 
       document.getElementById('route-project-detail').classList.add('active-route');
-      await renderAllPdfPagesToContainer(proj.file, gallery, 2.2);
+      await renderAllPdfPagesToContainer(proj.file, gallery, 1.45);
     }
 
-    /* ARCHITECTURE VISUALIZATION DETAIL VIEW (Status Field Removed) */
+    /* VISUALIZATION DETAIL VIEW */
     async function showVisualizationDetail(id) {
       const idx = architectureVisualizations.findIndex(v => v.id === id);
       if (idx === -1) {
@@ -1473,17 +1464,15 @@
       document.getElementById('vis-detail-setup').textContent = vis.setup;
       document.getElementById('vis-detail-scope').textContent = "Exterior & Interior 3D CGI";
 
-      // Status field is permanently omitted
-
       const gallery = document.getElementById('vis-detail-gallery');
       gallery.innerHTML = '';
 
       document.getElementById('route-visualization-detail').classList.add('active-route');
-      await renderAllPdfPagesToContainer(vis.pdfFile, gallery, 2.2);
+      await renderAllPdfPagesToContainer(vis.pdfFile, gallery, 1.45);
     }
 
     function initDataViews() {
-      // 1. Projects List (Ordered)
+      // 1. Projects List
       const projContainer = document.getElementById('projects-list-container');
       projContainer.innerHTML = '';
       projects.forEach(p => {
@@ -1503,7 +1492,7 @@
         } else {
           const canvas = document.createElement('canvas');
           mediaDiv.appendChild(canvas);
-          renderPdfThumbnail(p.file, canvas, 1.0);
+          renderPdfThumbnail(p.file, canvas, 0.4);
         }
 
         const bodyDiv = document.createElement('div');
@@ -1522,7 +1511,7 @@
         projContainer.appendChild(card);
       });
 
-      // 2. Architecture Visualization List (Ordered)
+      // 2. Architecture Visualization List
       const visContainer = document.getElementById('visualization-list-container');
       visContainer.innerHTML = '';
       architectureVisualizations.forEach(v => {
@@ -1535,7 +1524,7 @@
 
         const canvas = document.createElement('canvas');
         mediaDiv.appendChild(canvas);
-        renderPdfThumbnail(v.pdfFile, canvas, 1.0);
+        renderPdfThumbnail(v.pdfFile, canvas, 0.4);
 
         const bodyDiv = document.createElement('div');
         bodyDiv.className = 'item-card-body';
@@ -1678,77 +1667,6 @@
       feather.replace();
       router();
     });
-  </script>
-</body>
-</html>
-<!-- Paste right above </body> -->
-  <script>
-    async function renderOptimizedPdf(pdfUrl, container) {
-      container.innerHTML = '<div style="text-align:center;padding:30px;color:#888;font-family:sans-serif;">Streaming high-res drawings...</div>';
-
-      try {
-        const loadingTask = pdfjsLib.getDocument({
-          url: pdfUrl,
-          rangeChunkSize: 65536,
-          disableAutoFetch: true,
-          disableStream: false
-        });
-
-        const pdf = await loadingTask.promise;
-        container.innerHTML = '';
-
-        for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-          const pageWrapper = document.createElement('div');
-          pageWrapper.style.margin = '0 auto 30px auto';
-          pageWrapper.style.maxWidth = '1000px';
-          pageWrapper.style.minHeight = '600px';
-          pageWrapper.style.background = '#f7f7f7';
-          pageWrapper.style.display = 'flex';
-          pageWrapper.style.justifyContent = 'center';
-          pageWrapper.style.alignItems = 'center';
-          pageWrapper.setAttribute('data-page-num', pageNum);
-
-          const canvas = document.createElement('canvas');
-          canvas.style.maxWidth = '100%';
-          canvas.style.height = 'auto';
-          canvas.style.display = 'none';
-          pageWrapper.appendChild(canvas);
-          container.appendChild(pageWrapper);
-
-          if (pageNum === 1) {
-            renderCanvasPage(pdf, 1, pageWrapper, canvas);
-          } else {
-            const observer = new IntersectionObserver((entries, obs) => {
-              if (entries[0].isIntersecting) {
-                renderCanvasPage(pdf, pageNum, pageWrapper, canvas);
-                obs.disconnect();
-              }
-            }, { rootMargin: '300px' });
-            observer.observe(pageWrapper);
-          }
-        }
-      } catch (err) {
-        container.innerHTML = `<div style="text-align:center;padding:30px;color:#c00;">Failed to load drawing set: ${err.message}</div>`;
-      }
-    }
-
-    async function renderCanvasPage(pdf, pageNum, wrapper, canvas) {
-      try {
-        const page = await pdf.getPage(pageNum);
-        const viewport = page.getViewport({ scale: 1.25 });
-        const ctx = canvas.getContext('2d');
-
-        canvas.height = viewport.height;
-        canvas.width = viewport.width;
-
-        await page.render({ canvasContext: ctx, viewport: viewport }).promise;
-        wrapper.style.minHeight = 'auto';
-        wrapper.style.background = 'transparent';
-        canvas.style.display = 'block';
-      } catch (e) {
-        console.error(`Error rendering page ${pageNum}:`, e);
-      }
-    }
   </script>
 </body>
 </html>
