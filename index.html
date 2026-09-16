@@ -1,0 +1,1683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dilipa HK | Architect & 3D Visualization Professional</title>
+
+  <!-- Typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Feather Icons, Three.js & PDF.js -->
+  <script src="https://unpkg.com/feather-icons"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
+  <style>
+    :root {
+      --bg: #faf9f6;
+      --surface: #ffffff;
+      --surface-subtle: #f4f3ee;
+      --border: rgba(0, 0, 0, 0.08);
+      --border-strong: rgba(0, 0, 0, 0.2);
+      --text-primary: #17181c;
+      --text-muted: #6f747e;
+      --accent: #9a653d;
+      --accent-soft: rgba(154, 101, 61, 0.12);
+      --font-display: 'Syne', sans-serif;
+      --font-body: 'Plus Jakarta Sans', sans-serif;
+      --radius: 10px;
+      --shadow-base: 0 6px 24px rgba(0, 0, 0, 0.05);
+      --shadow-elevated: 0 16px 40px rgba(0, 0, 0, 0.1);
+      --transition: 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background-color: var(--bg);
+      color: var(--text-primary);
+      font-family: var(--font-body);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+    a { color: inherit; text-decoration: none; }
+    .container { max-width: 1720px; margin: 0 auto; padding: 0 2.5rem; position: relative; }
+
+    header {
+      position: fixed;
+      top: 0;
+      width: 100%;
+      background: rgba(250, 249, 246, 0.95);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      z-index: 1000;
+    }
+    nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      height: 76px;
+    }
+    .brand {
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: 1.25rem;
+      letter-spacing: 0.04em;
+    }
+    .nav-links { display: flex; gap: 2.5rem; list-style: none; }
+    .nav-links a {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      font-weight: 500;
+      transition: color var(--transition);
+      cursor: pointer;
+    }
+    .nav-links a:hover, .nav-links a.active { color: var(--text-primary); font-weight: 600; }
+
+    .page-view {
+      display: none;
+      min-height: calc(100vh - 76px);
+      padding-top: 76px;
+      animation: pageIn 0.3s ease forwards;
+    }
+    .page-view.active-route { display: block; }
+    @keyframes pageIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      background: var(--text-primary);
+      color: #fff;
+      padding: 0.95rem 2.2rem;
+      border-radius: var(--radius);
+      font-size: 0.92rem;
+      font-weight: 500;
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    .btn:hover { background: var(--accent); color: #fff; transform: translateY(-2px); }
+
+    .section-eyebrow {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.22em;
+      color: var(--accent);
+      margin-bottom: 0.8rem;
+      font-weight: 700;
+      display: block;
+    }
+    .page-title {
+      font-family: var(--font-display);
+      font-size: clamp(2.8rem, 5.5vw, 4.2rem);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 1.2rem;
+      line-height: 1.08;
+    }
+    .page-subtitle {
+      font-size: 1.25rem;
+      color: var(--text-muted);
+      max-width: 980px;
+      margin-bottom: 3.5rem;
+      line-height: 1.7;
+    }
+    .page-top-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 2.5rem;
+      margin-bottom: 2rem;
+    }
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      transition: color var(--transition);
+      cursor: pointer;
+    }
+    .back-link:hover { color: var(--accent); }
+
+    #hero-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      pointer-events: none;
+      opacity: 0.9;
+    }
+    .hero-container {
+      min-height: 85vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      position: relative;
+      z-index: 2;
+      padding: 5rem 0;
+    }
+    .hero-content { max-width: 980px; }
+    .hero-tag {
+      font-size: 0.95rem;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      margin-bottom: 1rem;
+      font-weight: 700;
+      display: block;
+    }
+    .hero-title {
+      font-family: var(--font-display);
+      font-size: clamp(3.6rem, 7.5vw, 6.4rem);
+      line-height: 1.02;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      margin-bottom: 1.8rem;
+    }
+    .hero-bio {
+      font-size: 1.35rem;
+      color: var(--text-muted);
+      max-width: 820px;
+      margin-bottom: 3rem;
+      font-weight: 300;
+      line-height: 1.75;
+    }
+
+    .catalog-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(440px, 1fr));
+      gap: 2.8rem;
+      margin-bottom: 5rem;
+    }
+    .portal-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 3.8rem 3.2rem;
+      border-radius: var(--radius);
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 320px;
+      box-shadow: var(--shadow-base);
+      transition: var(--transition);
+      position: relative;
+      overflow: hidden;
+    }
+    .portal-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: var(--accent);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform var(--transition);
+    }
+    .portal-card:hover {
+      box-shadow: var(--shadow-elevated);
+      transform: translateY(-4px);
+      border-color: var(--border-strong);
+    }
+    .portal-card:hover::before { transform: scaleX(1); }
+    .portal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 2rem;
+    }
+    .portal-icon { width: 50px; height: 50px; color: var(--accent); }
+    .portal-title { font-family: var(--font-display); font-size: 2rem; margin-bottom: 0.85rem; }
+    .portal-desc { color: var(--text-muted); font-size: 1.05rem; line-height: 1.65; }
+
+    .item-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow-base);
+      display: flex;
+      flex-direction: column;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    .item-card:hover {
+      transform: translateY(-5px);
+      box-shadow: var(--shadow-elevated);
+      border-color: var(--accent);
+    }
+    .item-card-media {
+      width: 100%;
+      height: 320px;
+      overflow: hidden;
+      background: var(--surface-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+    .item-card-media canvas,
+    .item-card-media img {
+      width: 100% !important;
+      height: 100% !important;
+      object-fit: cover;
+      display: block;
+    }
+    .item-card-body {
+      padding: 2.2rem;
+      display: flex;
+      flex-direction: column;
+      flex-grow: 1;
+      justify-content: space-between;
+    }
+    .item-badge {
+      display: inline-block;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      margin-bottom: 0.5rem;
+    }
+    .item-title {
+      font-family: var(--font-display);
+      font-size: 1.45rem;
+      line-height: 1.35;
+      margin-bottom: 0.8rem;
+    }
+    .item-desc {
+      color: var(--text-muted);
+      font-size: 0.98rem;
+      line-height: 1.6;
+      margin-bottom: 1.8rem;
+    }
+    .item-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .project-detail-layout {
+      display: flex;
+      flex-direction: column;
+      gap: 3.5rem;
+      margin-bottom: 4rem;
+      width: 100%;
+    }
+    .project-overview-panel {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 4rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 3.5rem;
+      box-shadow: var(--shadow-base);
+    }
+    .project-body p {
+      font-size: 1.25rem;
+      line-height: 1.85;
+      color: var(--text-primary);
+      margin-bottom: 1.5rem;
+      font-weight: 300;
+    }
+    .sidebar-meta-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 2rem;
+    }
+    .sidebar-group h5 {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: var(--accent);
+      margin-bottom: 0.4rem;
+      font-weight: 700;
+    }
+    .sidebar-group p {
+      color: var(--text-primary);
+      font-size: 1.05rem;
+      font-weight: 500;
+    }
+
+    .detail-media-gallery {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 2.5rem;
+      width: 100%;
+      margin: 1.5rem 0 3rem 0;
+    }
+    .detail-media-figure {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-base);
+      overflow: hidden;
+      width: 100%;
+      min-height: 520px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform var(--transition), box-shadow var(--transition);
+      cursor: zoom-in;
+      position: relative;
+    }
+    .detail-media-figure:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-elevated);
+      border-color: var(--accent);
+    }
+    .detail-media-figure canvas {
+      width: 100% !important;
+      height: auto !important;
+      display: block;
+      object-fit: contain;
+    }
+
+    .pdf-error-banner {
+      width: 100%;
+      padding: 2.5rem;
+      background: #fff6f6;
+      border: 1px solid #e0b4b4;
+      border-radius: var(--radius);
+      color: #9f3a38;
+      text-align: center;
+      font-size: 0.95rem;
+      grid-column: span 2;
+    }
+
+    .static-section { padding: 7.5rem 0; border-bottom: 1px solid var(--border); }
+    .about-layout { display: grid; grid-template-columns: 1fr 1.6fr; gap: 5.5rem; }
+    .about-meta { display: flex; flex-direction: column; gap: 2.5rem; }
+    .meta-group h4 {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      color: var(--accent);
+      margin-bottom: 0.5rem;
+      font-weight: 700;
+    }
+    .meta-group p { color: var(--text-muted); font-size: 1.1rem; }
+    .about-narrative p {
+      font-size: 1.35rem;
+      line-height: 1.85;
+      color: var(--text-primary);
+      margin-bottom: 2rem;
+      font-weight: 300;
+    }
+
+    .timeline { position: relative; padding-left: 2.5rem; border-left: 2px solid var(--border); }
+    .timeline-item { position: relative; margin-bottom: 3.5rem; }
+    .timeline-item::before {
+      content: '';
+      position: absolute;
+      left: calc(-2.5rem - 6px);
+      top: 5px;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--accent);
+      border: 3px solid var(--bg);
+    }
+    .timeline-period {
+      font-size: 0.85rem;
+      letter-spacing: 0.12em;
+      color: var(--accent);
+      text-transform: uppercase;
+      margin-bottom: 0.35rem;
+      font-weight: 700;
+    }
+    .timeline-role { font-family: var(--font-display); font-size: 1.5rem; margin-bottom: 0.35rem; }
+    .timeline-company { font-size: 1.05rem; color: var(--text-muted); margin-bottom: 0.7rem; }
+    .timeline-desc { color: var(--text-muted); font-size: 1.05rem; max-width: 860px; }
+
+    .skills-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1.8rem;
+    }
+    .skill-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 1.6rem;
+      border-radius: var(--radius);
+      display: flex;
+      align-items: center;
+      gap: 1.2rem;
+      box-shadow: var(--shadow-base);
+    }
+    .skill-card i { color: var(--accent); width: 26px; height: 26px; }
+
+    .contact-layout { display: grid; grid-template-columns: 1fr 1.2fr; gap: 5rem; align-items: start; }
+    .contact-entry h4 {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--accent);
+      margin-bottom: 0.4rem;
+      font-weight: 700;
+    }
+    .contact-entry p, .contact-entry a { font-size: 1.2rem; color: var(--text-primary); }
+
+    .form-group { margin-bottom: 1.8rem; }
+    .form-group label {
+      display: block;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      margin-bottom: 0.6rem;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+    .form-control {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text-primary);
+      padding: 1.1rem;
+      border-radius: var(--radius);
+      outline: none;
+      font-family: inherit;
+      font-size: 1rem;
+    }
+    .form-control:focus { border-color: var(--accent); }
+    textarea.form-control { resize: vertical; min-height: 150px; }
+
+    /* LIGHTBOX INSPECTION */
+    #image-lightbox {
+      position: fixed;
+      inset: 0;
+      background: rgba(10, 11, 13, 0.96);
+      backdrop-filter: blur(16px);
+      z-index: 3000;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      user-select: none;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    #image-lightbox.active { display: flex; opacity: 1; }
+    .lightbox-toolbar {
+      position: absolute;
+      top: 20px;
+      right: 30px;
+      display: flex;
+      align-items: center;
+      gap: 1.2rem;
+      z-index: 3010;
+    }
+    .lightbox-btn {
+      background: rgba(255, 255, 255, 0.14);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      color: #ffffff;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .lightbox-btn:hover { background: var(--accent); border-color: var(--accent); transform: scale(1.08); }
+    .lightbox-stage {
+      width: 95vw;
+      height: 88vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      cursor: grab;
+    }
+    .lightbox-stage:active { cursor: grabbing; }
+    #lightbox-img {
+      max-width: 92vw;
+      max-height: 84vh;
+      object-fit: contain;
+      box-shadow: 0 25px 70px rgba(0, 0, 0, 0.7);
+      transition: transform 0.12s ease-out;
+      transform-origin: center center;
+    }
+    .lightbox-hint {
+      position: absolute;
+      bottom: 24px;
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 0.88rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      pointer-events: none;
+    }
+
+    @media (max-width: 1200px) {
+      .project-overview-panel { grid-template-columns: 1fr; gap: 2.5rem; }
+    }
+    @media (max-width: 900px) {
+      .container { padding: 0 1.5rem; }
+      .about-layout, .contact-layout { grid-template-columns: 1fr; gap: 3rem; }
+      .detail-media-gallery, .catalog-grid { grid-template-columns: 1fr; gap: 2rem; }
+      .detail-media-figure { grid-column: span 2; }
+      .nav-links { display: none; }
+      .static-section { padding: 5rem 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="container">
+      <nav>
+        <a href="#/home" class="brand">DILIPA HK</a>
+        <ul class="nav-links">
+          <li><a href="#/home" data-route="home">Home</a></li>
+          <li><a onclick="navigateToHomePortals()">Portfolio</a></li>
+          <li><a onclick="navigateToHomeSection('experience')">Experience</a></li>
+          <li><a onclick="navigateToHomeSection('skills')">Skills</a></li>
+          <li><a onclick="navigateToHomeSection('contact')">Contact</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <!-- VIEW 1: HOME PAGE -->
+  <main id="route-home" class="page-view">
+    <section id="hero" style="position: relative; overflow: hidden; background: linear-gradient(180deg, #f0eee9 0%, #faf9f6 100%);">
+      <canvas id="hero-canvas"></canvas>
+      <div class="container hero-container">
+        <div class="hero-content">
+          <span class="hero-tag">Architect & 3D Visualization Specialist</span>
+          <h1 class="hero-title">Dilipa HK</h1>
+          <p class="hero-bio">
+            Architectural designer based in Bengaluru with professional experience across Khosla Associates and Urban Frame, synthesizing structural construction sets with hyper-realistic CGI environments
+          </p>
+          <a onclick="navigateToHomePortals()" class="btn">
+            View Portfolios <i data-feather="arrow-down"></i>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <section id="about" class="static-section">
+      <div class="container">
+        <span class="section-eyebrow">Profile</span>
+        <h2 class="page-title" style="font-size: 3rem; margin-bottom: 3.5rem;">Design Principles & Practice</h2>
+        <div class="about-layout">
+          <div class="about-meta">
+            <div class="meta-group">
+              <h4>Academic Degree</h4>
+              <p>Bachelor of Architecture (B.Arch)</p>
+            </div>
+            <div class="meta-group">
+              <h4>Location</h4>
+              <p>Bengaluru, Karnataka, India</p>
+            </div>
+            <div class="meta-group">
+              <h4>Core Competencies</h4>
+              <p>Conceptual designing,Working Drawings, Detail Detailing, Site Coordination & 3D Visualization</p>
+            </div>
+          </div>
+          <div class="about-narrative">
+            <p>
+              An evolving practice grounded in design,documentation,and on site execution.My work spans residential,institutional,and masterplanning projects,with a focus on contextual design and buildable architecture. 
+            </p>
+            <p style="font-size: 1.15rem; color: var(--text-muted);">
+              Use the two primary portals directly below to explore full project documentation sets and dedicated 3D visualization project dossiers.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="home-portals" class="static-section" style="background: var(--surface-subtle);">
+      <div class="container">
+        <span class="section-eyebrow">Selected Tracks</span>
+        <h2 class="page-title" style="font-size: 2.8rem; margin-bottom: 3rem;">Projects & Visualization Portals</h2>
+        <div class="catalog-grid" style="grid-template-columns: 1fr 1fr; margin-bottom: 0;">
+          <a href="#/projects" class="portal-card">
+            <div>
+              <div class="portal-header">
+                <i data-feather="folder" class="portal-icon"></i>
+                <i data-feather="arrow-up-right"></i>
+              </div>
+              <h2 class="portal-title">PROJECTS</h2>
+              <p class="portal-desc">
+                Access full architectural design proposals, institutional masterplans, thesis research, temporary laborer housing prototypes, and residential working drawing packages.
+              </p>
+            </div>
+            <span class="item-cta" style="margin-top: 2rem;">Explore All Projects &rarr;</span>
+          </a>
+
+          <a href="#/visualization" class="portal-card">
+            <div>
+              <div class="portal-header">
+                <i data-feather="box" class="portal-icon"></i>
+                <i data-feather="arrow-up-right"></i>
+              </div>
+              <h2 class="portal-title">ARCHITECTURE VISUALIZATION</h2>
+              <p class="portal-desc">
+                Explore 15 individual visualization projects featuring full exterior perspectives, luxury interior staging, high-rise facade studies, and landscape renders.
+              </p>
+            </div>
+            <span class="item-cta" style="margin-top: 2rem;">Explore Visualization Hub &rarr;</span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <section id="experience" class="static-section">
+      <div class="container">
+        <span class="section-eyebrow">Career Timeline</span>
+        <h2 class="page-title" style="font-size: 3rem; margin-bottom: 3.5rem;">Experience & Practice</h2>
+        <div class="timeline" id="experience-container"></div>
+      </div>
+    </section>
+
+    <section id="skills" class="static-section">
+      <div class="container">
+        <span class="section-eyebrow">Capabilities</span>
+        <h2 class="page-title" style="font-size: 3rem; margin-bottom: 3.5rem;">Technical Suite & Skills</h2>
+        <div class="skills-grid" id="skills-container"></div>
+      </div>
+    </section>
+
+    <section id="contact" class="static-section">
+      <div class="container">
+        <span class="section-eyebrow">Inquiries</span>
+        <h2 class="page-title" style="font-size: 3rem; margin-bottom: 3.5rem;">Get in Touch</h2>
+        <div class="contact-layout">
+          <div>
+            <p style="font-size: 1.35rem; margin-bottom: 2rem;">Available for architectural collaborations, construction drawing coordination, and CGI commissions.</p>
+            <div style="display: flex; flex-direction: column; gap: 2rem;">
+              <div class="contact-entry">
+                <h4>Direct Email</h4>
+                <a href="mailto:dilipahk0@gmail.com">dilipahk0@gmail.com</a>
+              </div>
+              <div class="contact-entry">
+                <h4>Direct Phone</h4>
+                <p>+91 9740834585</p>
+              </div>
+              <div class="contact-entry">
+                <h4>Location</h4>
+                <p>Bengaluru, Karnataka, India</p>
+              </div>
+            </div>
+          </div>
+          <form onsubmit="handleFormSubmit(event)">
+            <div class="form-group">
+              <label>Name</label>
+              <input type="text" class="form-control" required placeholder="Full Name">
+            </div>
+            <div class="form-group">
+              <label>Email</label>
+              <input type="email" class="form-control" required placeholder="name@domain.com">
+            </div>
+            <div class="form-group">
+              <label>Message</label>
+              <textarea class="form-control" required placeholder="Project details, scope, and timeline..."></textarea>
+            </div>
+            <button type="submit" class="btn" style="width: 100%; justify-content: center;">Send Message</button>
+          </form>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- VIEW 2: PORTFOLIO DIRECTORY -->
+  <main id="route-portfolio" class="page-view">
+    <div class="container">
+      <div class="page-top-nav">
+        <a onclick="navigateToHomePortals()" class="back-link"><i data-feather="arrow-left"></i> Back to Portfolio</a>
+      </div>
+      <span class="section-eyebrow">Directory</span>
+      <h1 class="page-title">Portfolio Portals</h1>
+      <p class="page-subtitle">
+        Select a primary track to examine architectural project dossiers or view individual visualization projects.
+      </p>
+      <div class="catalog-grid" style="grid-template-columns: 1fr 1fr;">
+        <a href="#/projects" class="portal-card">
+          <div>
+            <div class="portal-header">
+              <i data-feather="folder" class="portal-icon"></i>
+              <i data-feather="arrow-up-right"></i>
+            </div>
+            <h2 class="portal-title">PROJECTS</h2>
+            <p class="portal-desc">
+              Architectural design proposals, institutional masterplans, thesis research, temporary laborer housing prototypes, and residential construction drawing packages[cite: 3, 11, 12, 18].
+            </p>
+          </div>
+          <span class="item-cta" style="margin-top: 2rem;">Explore All Projects &rarr;</span>
+        </a>
+
+        <a href="#/visualization" class="portal-card">
+          <div>
+            <div class="portal-header">
+              <i data-feather="box" class="portal-icon"></i>
+              <i data-feather="arrow-up-right"></i>
+            </div>
+            <h2 class="portal-title">ARCHITECTURE VISUALIZATION</h2>
+            <p class="portal-desc">
+              Explore 15 individual visualization projects featuring exterior perspectives, luxury interior staging, high-rise facades, and landscape renders.
+            </p>
+          </div>
+          <span class="item-cta" style="margin-top: 2rem;">Explore Visualization Hub &rarr;</span>
+        </a>
+      </div>
+    </div>
+  </main>
+
+  <!-- VIEW 3: PROJECTS LIST PAGE -->
+  <main id="route-projects" class="page-view">
+    <div class="container">
+      <div class="page-top-nav">
+        <a onclick="navigateToHomePortals()" class="back-link"><i data-feather="arrow-left"></i> Back to Portfolio</a>
+      </div>
+      <span class="section-eyebrow">Works</span>
+      <h1 class="page-title">Architectural Projects</h1>
+      <p class="page-subtitle">
+        Click any project below to access its dedicated project overview, design rationale, and drawings extracted directly from project dossiers.
+      </p>
+      <div class="catalog-grid" id="projects-list-container"></div>
+    </div>
+  </main>
+
+  <!-- VIEW 4: INDIVIDUAL PROJECT PAGE (Read-Only Fields Driven by Code) -->
+  <main id="route-project-detail" class="page-view">
+    <div class="container">
+      <div class="page-top-nav">
+        <a onclick="navigateToHomePortals()" class="back-link"><i data-feather="arrow-left"></i> Back to Portfolio</a>
+        <span class="section-eyebrow" id="proj-detail-badge">Project Dossier</span>
+      </div>
+
+      <h1 class="page-title" id="proj-detail-title">Project Name</h1>
+      <p class="page-subtitle" id="proj-detail-subtitle">Subtitle and summary...</p>
+
+      <div class="project-detail-layout">
+        <div class="project-overview-panel">
+          <div class="project-body">
+            <h3 id="proj-detail-heading" style="font-family: var(--font-display); font-size: 1.6rem; margin-bottom: 1.2rem;">Project Concept & Scope</h3>
+            <p id="proj-detail-description"></p>
+          </div>
+          
+          <!-- Read-Only Meta Sidebar Driven Exclusively By Code -->
+          <div class="sidebar-meta-grid" id="proj-detail-meta-grid"></div>
+        </div>
+
+        <div class="detail-media-gallery" id="proj-detail-gallery"></div>
+      </div>
+    </div>
+  </main>
+
+  <!-- VIEW 5: ARCHITECTURE VISUALIZATION PROJECT CATALOG -->
+  <main id="route-visualization" class="page-view">
+    <div class="container">
+      <div class="page-top-nav">
+        <a onclick="navigateToHomePortals()" class="back-link"><i data-feather="arrow-left"></i> Back to Portfolio</a>
+      </div>
+      <span class="section-eyebrow">CGI Production</span>
+      <h1 class="page-title">Architecture Visualization</h1>
+      <p class="page-subtitle">
+        Click any project below to inspect all its architectural visualization plates, renders, and drawings rendered directly from its PDF dossier.
+      </p>
+
+      <div class="catalog-grid" id="visualization-list-container"></div>
+    </div>
+  </main>
+
+  <!-- VIEW 6: INDIVIDUAL VISUALIZATION PROJECT PAGE (Status Field Removed) -->
+  <main id="route-visualization-detail" class="page-view">
+    <div class="container">
+      <div class="page-top-nav">
+        <a onclick="navigateToHomePortals()" class="back-link"><i data-feather="arrow-left"></i> Back to Portfolio</a>
+        <span class="section-eyebrow" id="vis-detail-badge">Visualization Dossier</span>
+      </div>
+
+      <h1 class="page-title" id="vis-detail-title">Project Title</h1>
+      <p class="page-subtitle" id="vis-detail-subtitle">CGI & Visualization Package</p>
+
+      <div class="project-detail-layout">
+        <div class="project-overview-panel">
+          <div class="project-body">
+            <h3 style="font-family: var(--font-display); font-size: 1.6rem; margin-bottom: 1.2rem;">Visualization Concept & Environment</h3>
+            <p id="vis-detail-description"></p>
+          </div>
+          <div class="sidebar-meta-grid" id="vis-detail-meta-grid">
+            <div class="sidebar-group">
+              <h5>Category</h5>
+              <p id="vis-detail-category">Architecture Visualization</p>
+            </div>
+            <div class="sidebar-group">
+              <h5>Environment & Setup</h5>
+              <p id="vis-detail-setup">Daylight & Dusk Lighting Studies</p>
+            </div>
+            <div class="sidebar-group" style="grid-column: span 2;">
+              <h5>Scope of Work</h5>
+              <p id="vis-detail-scope">3D VISUALIZATION</p>
+            </div>
+            <!-- Status field permanently removed -->
+          </div>
+        </div>
+
+        <div class="detail-media-gallery" id="vis-detail-gallery"></div>
+      </div>
+    </div>
+  </main>
+
+  <!-- FULLSCREEN LIGHTBOX -->
+  <div id="image-lightbox" onclick="closeLightbox(event)">
+    <div class="lightbox-toolbar" onclick="event.stopPropagation()">
+      <button class="lightbox-btn" onclick="zoomLightbox(0.25)" title="Zoom In"><i data-feather="zoom-in"></i></button>
+      <button class="lightbox-btn" onclick="zoomLightbox(-0.25)" title="Zoom Out"><i data-feather="zoom-out"></i></button>
+      <button class="lightbox-btn" onclick="resetLightboxZoom()" title="Reset Size"><i data-feather="maximize-2"></i></button>
+      <button class="lightbox-btn" onclick="closeLightbox()" title="Close"><i data-feather="x"></i></button>
+    </div>
+    <div class="lightbox-stage" id="lightbox-stage" onclick="event.stopPropagation()">
+      <img id="lightbox-img" src="" alt="Inspection View">
+    </div>
+    <div class="lightbox-hint">Scroll mouse wheel or use buttons to zoom • Drag to pan</div>
+  </div>
+
+  <script>
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+    /* REUSABLE PDF PAGE RENDERER */
+    async function renderAllPdfPagesToContainer(pdfUrl, containerElement, scaleMultiplier = 2.2) {
+      try {
+        const loadingTask = pdfjsLib.getDocument({
+          url: encodeURI(pdfUrl),
+          cMapUrl: 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/cmaps/',
+          cMapPacked: true
+        });
+        const pdf = await loadingTask.promise;
+
+        for (let pageNo = 1; pageNo <= pdf.numPages; pageNo++) {
+          const page = await pdf.getPage(pageNo);
+          const viewport = page.getViewport({ scale: scaleMultiplier });
+
+          const fig = document.createElement('figure');
+          fig.className = 'detail-media-figure';
+          fig.title = 'Click to inspect in high resolution';
+
+          const canvas = document.createElement('canvas');
+          canvas.height = viewport.height;
+          canvas.width = viewport.width;
+
+          const renderContext = {
+            canvasContext: canvas.getContext('2d'),
+            viewport: viewport
+          };
+          await page.render(renderContext).promise;
+
+          fig.onclick = function() {
+            openLightboxFromCanvas(canvas);
+          };
+
+          fig.appendChild(canvas);
+          containerElement.appendChild(fig);
+        }
+      } catch (err) {
+        console.warn(`Error loading PDF "${pdfUrl}":`, err);
+        const errBanner = document.createElement('div');
+        errBanner.className = 'pdf-error-banner';
+        errBanner.innerHTML = `<strong>File Not Found:</strong> Could not load <code>${pdfUrl}</code>.<br><small>Make sure the file is in your website folder and that Live Server is running.</small>`;
+        containerElement.appendChild(errBanner);
+      }
+    }
+
+    /* Renders Page 1 of any PDF as a Sharp Cover Thumbnail */
+    async function renderPdfThumbnail(pdfUrl, targetCanvas, scaleMultiplier = 1.0) {
+      try {
+        const loadingTask = pdfjsLib.getDocument({
+          url: encodeURI(pdfUrl),
+          cMapUrl: 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/cmaps/',
+          cMapPacked: true
+        });
+        const pdf = await loadingTask.promise;
+        const page = await pdf.getPage(1);
+        
+        const viewport = page.getViewport({ scale: scaleMultiplier });
+        targetCanvas.height = viewport.height;
+        targetCanvas.width = viewport.width;
+
+        const renderContext = {
+          canvasContext: targetCanvas.getContext('2d'),
+          viewport: viewport
+        };
+        await page.render(renderContext).promise;
+      } catch (err) {
+        const ctx = targetCanvas.getContext('2d');
+        targetCanvas.width = 240;
+        targetCanvas.height = 240;
+        ctx.fillStyle = '#f0f2f5';
+        ctx.fillRect(0, 0, targetCanvas.width, targetCanvas.height);
+        ctx.fillStyle = '#9a653d';
+        ctx.font = '700 13px Plus Jakarta Sans, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('PDF PREVIEW', targetCanvas.width / 2, targetCanvas.height / 2);
+      }
+    }
+
+    /* ━━━━━━━━━━━━━━━━━━━━ PROJECTS DATA (EDITABLE IN CODE) ━━━━━━━━━━━━━━━━━━━━
+       You can add, edit, or delete any field inside "metaFields" for any project.
+       Each project can have its own unique custom field labels and values.
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    const projects = [
+      // 1. Puravankara Hennur
+      {
+        id: "puravankara-hennur",
+        title: "Puravankara Hennur",
+        category: "High-Rise Residential APPARTMENT",
+        heading: "Project Concept & Scope",
+        desc: "High-density residential towers (2B+G+26) incorporating an 82% open space ratio, sky bridges, pedestrian circulation separated from vehicular tracks, integrated clubhouse, and luxury 3BHK and 4BHK apartment layouts.",
+        file: "Purvankara_Hennur.pdf",
+        metaFields: [
+          { label: "Category", value: "High-Rise Residential APPARTMENT" },
+          { label: "Location", value: "Hennur Road Bengaluru" },
+          { label: "Scope of Work", value: "Master Planning, 26-Storey Tower Planning, Unit Planning, Facade design" },
+          {label:"status",value:"Under Construction"}
+        ]
+      },
+      // 2. Unicorn Terraces
+      {
+        id: "unicorn-terraces",
+        title: "Unicorn Terraces",
+        category: "English Classical Row Houses & Masterplanning",
+        heading: "Project Concept & Scope",
+        desc: "99 English Classical luxury row houses masterplanned around 2 acre central park, featuring 4bhk and 5 bhk villas, sculpted cuboidal massing with cantilevered terraces, and private club pavilion.",
+        file: "UNICORN TERRACES.pdf",
+        coverImage: "UNICORN TERRACES.jpg",
+        metaFields: [
+          { label: "Category", value: "English Classical Row Houses & Masterplanning" },
+          { label: "Location", value: "Bengaluru, India" },
+          { label: "Scope of Work", value: "Masterplan Zoning, Villa designs, Construction Detailing" },
+          {label:"status",value:"Under Construction"}
+        ]
+      },
+      // 3. Puravankara Richmond
+      {
+        id: "puravankara-richmond",
+        title: "Puravankara Richmond",
+        category: "Commercial High-Rise Architecture",
+        heading: "Project Concept & Scope",
+        desc: "A prime urban corporate tower (G+19) featuring curvilinear architectural massing, triple-level stack parking basements, triple-height entrance lobbies, terrace gardens, and sky decks positioned along Bengaluru's central business corridor.",
+        file: "PURVANKARA_RICHMOND-Design presentation.pdf",
+        metaFields: [
+          { label: "Category", value: "Commercial High-Rise Architecture" },
+          { label: "Location", value: "Richmond Road / Residency Road, Bengaluru" },
+          { label: "Scope of Work", value: "Commercial Footprint, Multi-Level Core Planning, Facade Engineering" },
+          {label:"status",value:"CONCEPTUAL"}
+        ]
+      },
+      // 4. SNN Estates Antara
+      {
+        id: "snn-estates-antara",
+        title: "SNN Estates Antara",
+        category: "Residential Masterplanning & Villa Design",
+        heading: "Project Concept & Scope",
+        desc: "A multi-tier villa community masterplanned around natural site topography with a 12.5m level difference. Features East, West, and North facing villa configurations, pedestrian pathways, central greens, and community sports facilities.",
+        file: "SNN ESTATES .pdf",
+        metaFields: [
+          { label: "Category", value: "Residential Masterplanning & Villa Design" },
+          { label: "Location", value: "Bengaluru, Karnataka" },
+          { label: "Scope of Work", value: "Masterplan Circulation, Topography Analysis, Villa Typologies, Clubhouse" },
+          {label:"status",value:"CONCEPTUAL"}
+        ]
+      },
+      // 5. Anand Residency
+      {
+        id: "anand-residence",
+        title: "Anand Residency",
+        category: "Luxury Residential Architecture",
+        heading: "Project Concept & Scope",
+        desc: "Luxury private residence at Epsilon Villas exploring compact vs peripheral building configurations, courtyard orientation, verandah thresholds, and bespoke exposed concrete and brickwork facade detailing.",
+        file: "ANAND RESIDENCE.pdf",
+        metaFields: [
+          { label: "Category", value: "Luxury Residential Architecture" },
+          { label: "Location", value: "Epsilon Residential Villas, Bangalore" },
+          { label: "Scope of Work", value: "Zoning Schemes, Floor Plans, Working Drawings, Concrete Detailing" },
+          {label:"status",value:"BUILT"}
+
+        ]
+      },
+      // 6. Khosla Associates Works
+      {
+        id: "khosla-associates-works",
+        title: "Khosla Associates Works",
+        category: "Professional Practice & Working Drawings",
+        heading: "Project Concept & Scope",
+        desc: "Professional work across 9 projects under Ar. Anamika Kalathingal including Cibi & Arudhra Residence, Bhima Residence, Guptha Residence, Westbridge Office, and Allu Arjun Residence, preparing complete construction and detail sets.",
+        file: "KHOSLA ASSOCIATES.pdf",
+        coverImage: "KHOSLA ASSOCIATES.jpg",
+        metaFields: [
+          { label: "Category", value: "Professional Practice & Working Drawings" },
+          { label: "Location", value: "Bengaluru, India" },
+          { label: "Scope of Work", value: "Working Drawing Sets, Site Documentation, Detail Drawings, Staircase Details" }
+        ]
+      },
+      // 7. UVCE Campus
+      {
+        id: "uvce-campus-masterplan",
+        title: "UVCE Campus",
+        category: "Institutional Masterplanning & Architecture",
+        heading: "Project Concept & Scope",
+        desc: "A comprehensive institutional masterplan for UVCE situated on a contoured site near Bangalore University. The design organizes departmental academic blocks, a lecture complex, and research incubation hubs around a central biodiversity park, integrating sustainable drainage and daylight harvesting.",
+        file: "UVCE.pdf",
+        metaFields: [
+          { label: "Category", value: "Institutional Masterplanning & Architecture" },
+          { label: "Location", value: "Jnanabharathi, Bengaluru, Karnataka" },
+          { label: "Scope of Work", value: "Radial Zoning, Academic Blocks designing, Lecture complex designing, Visualization" },
+          {label:"status",value:"CONCEPTUAL"}
+        ]
+      },
+      // 8. The Forgotten Empire
+      {
+        id: "the-forgotten-empire",
+        title: "The Forgotten Empire",
+        category: "Thesis Studio 10 • Heritage & Masterplanning",
+        heading: "Project Concept & Scope",
+        desc: "A comprehensive 36-acre masterplan and heritage interpretation complex designed to respect the historic ruins of Hampi. Resolves strict archaeological heritage regulations with tourism infrastructure, museum pavilions, and pedestrian promenades using contextual stone masonry and vernacular micro-climatic shading.",
+        file: "THE FORGOTTEN EMPIRE_THESIS.pdf",
+        coverImage: "THE FORGOTTEN EMPIRE.jpg",
+        metaFields: [
+          { label: "Category", value: "Thesis Studio 10 • Heritage & Masterplanning" },
+          { label: "Location", value: "Hampi, Karnataka (36 Acres)" },
+          { label: "Scope of Work", value: "B.ARCH THESIS PROJECT" }
+        ]
+      },
+      // 9. College Campus
+      {
+        id: "management-college-campus",
+        title: "College Campus",
+        category: "Institutional Masterplanning",
+        heading: "Project Concept & Scope",
+        desc: "A water-sensitive academic masterplan designed for 1,000 students. The campus layout incorporates decentralized rainwater collection swales, courtyard wind catchers, academic faculty departments, student dormitories, and an amphitheater integrated into natural contours.",
+        file: "COLLEGE CAMPUS.pdf",
+        coverImage: "COLLEGE CAMPUS.jpg",
+        metaFields: [
+          { label: "Category", value: "Institutional Masterplanning" },
+          { label: "Location", value: "Hesarghatta, Bengaluru (40,758 sqm)" },
+          { label: "Scope of Work", value: "Masterplanning, Academic Blocks, Auditoriums, Library, Passive Cooling 7TH SEM COLLAGE WORK" }
+        ]
+      }
+    ];
+
+    /* ━━━━━━━━━━━━━━━━━━━━ ARCHITECTURE VISUALIZATION (Status Field Removed) ━━━━━━━━━━━━━━━━━━━━ */
+    const architectureVisualizations = [
+      // 1. DNR Commercial
+      {
+        id: "vis-dnr-commercial",
+        title: "DNR Commercial",
+        category: "Corporate Commercial Campus",
+        setup: "Curved Glazed Towers, Waterfront Promenade & Central Plaza",
+        desc: "Comprehensive visualization suite for DNR Commercial tech park, displaying curvilinear solar glass facades, bridge links, ground-level retail spaces, and reflective water features.",
+        pdfFile: "DNR COMMERCIAL.pdf"
+      },
+      // 2. DNR Residential Towers
+      {
+        id: "vis-dnr-residential-towers",
+        title: "DNR Residential Towers",
+        category: "High-Rise Residential Masterplan",
+        setup: "Curving Skyline Crowns, Sky Bridges & Sports Courts",
+        desc: "Exterior and amenity visualization for DNR Residential Towers, highlighting dynamic roofline structures, pedestrian circulation, tennis courts, and landscaped ground-level gathering areas.",
+        pdfFile: "DNR RESIDENTIAL TOWERS.pdf"
+      },
+      // 3. Ramaiah University
+      {
+        id: "vis-ramaiah-university",
+        title: "Ramaiah University",
+        category: "Educational Campus Masterplan",
+        setup: "Central Knowledge Plaza, Water Basins & Colonnades",
+        desc: "Institutional campus visualization detailing academic departmental blocks, amphitheater seating steps, reflecting lily ponds, and tree-lined student walkways.",
+        pdfFile: "RAMAIAH UNIVERSITY.pdf"
+      },
+      // 4. Purvankara Richmond Town
+      {
+        id: "vis-purvankara-richmond-town",
+        title: "Purvankara Richmond Town",
+        category: "Corporate High-Rise Architecture",
+        setup: "Curvilinear Glazing, Double-Height Lobbies & Approach Decks",
+        desc: "Commercial corporate high-rise visual package detailing sweeping curved curtain walls, entrance arrival courts, drop-off canopies, and urban street integration.",
+        pdfFile: "PURAVANKRA OFFICE RICHMOND TOWN.pdf"
+      },
+      // 5. Puravankara Hennur
+      {
+        id: "vis-purvankara-hennur",
+        title: "Puravankara Hennur",
+        category: "High-Rise Residential Visualization",
+        setup: "Golden Hour HDRI, Balcony Gardens & Sky Lounges",
+        desc: "Residential skyscraper visual suite presenting 26-storey towers with landscaped sky decks, podium clubhouse facilities, approach boulevards, and dusk lighting.",
+        pdfFile: "PURAVANKRA HENNUR_visuals.pdf"
+      },
+      // 6. Settukunnu Resort
+      {
+        id: "vis-settukunnu-resort",
+        title: "Settukunnu Resort",
+        category: "Hillside Hospitality & Landscape",
+        setup: "Contoured Terrain, Cantilevered Timber Villas & Infinity Pools",
+        desc: "Eco-hospitality visualization showcasing terraced villas built into natural sloping hillsides, private lap pools, viewing pavilions, and tropical tree cover.",
+        pdfFile: "Settukunnu Resort.pdf"
+      },
+      // 7. Timberleaf Farms
+      {
+        id: "vis-timberleaf-farms",
+        title: "Timberleaf Farms",
+        category: "Agrarian Community & Farmhouse",
+        setup: "Masterplanned Greenery, Minimalist Barn Cottages & Lap Pools",
+        desc: "Expansive agro-residential masterplan visualization presenting tree-lined avenue roads, country farm cottages, leisure swimming pools, and community pavilions.",
+        pdfFile: "TIMBERLEAF FARMS.pdf"
+      },
+      // 8. UVCE Visuals
+      {
+        id: "vis-uvce",
+        title: "UVCE Visuals",
+        category: "Civic & Institutional Campus",
+        setup: "Central Biodiversity Park, Academic Quad & Sports Arena",
+        desc: "Architectural representations of the UVCE masterplan, featuring radial departmental buildings, the central biodiversity park, clock tower circle, and student plazas.",
+        pdfFile: "UVCE_VIZUALS.pdf"
+      },
+      // 9. Vishnu Forge Interiors
+      {
+        id: "vis-vishnu-forge-interiors",
+        title: "Vishnu Forge Interiors",
+        category: "Industrial & Corporate Interior",
+        setup: "Double-Height Reception, Modern Metal Stairs & Acoustic Workstations",
+        desc: "Full interior visualization package displaying modern reception lounges, feature metal staircases, client presentation rooms, open-plan workstations, and industrial storage areas.",
+        pdfFile: "Vishnu Forge Interiors.pdf"
+      },
+      // 10. Purva Skyee
+      {
+        id: "vis-purva-sky",
+        title: "Purva Skyee",
+        category: "Luxury Tower & Skydeck",
+        setup: "High-Altitude Aerials & Panoramic Glass Envelopes",
+        desc: "Tower visualization highlighting high-altitude observation terraces, reflective glass envelopes, luxury lounge decks, and urban night vistas.",
+        pdfFile: "Purva Skyee.pdf"
+      },
+      // 11. Glenz Basaveshwaranagar
+      {
+        id: "vis-glenz-business",
+        title: "Glenz Basaveshwaranagar",
+        category: "Commercial Hospitality & Retail",
+        setup: "Twilight Warm Filaments (2700K) & Terracotta Screens",
+        desc: "Complete architectural visualization package for Glen's Bakehouse in Basaveshwara Nagar, covering exterior cafe facades, outdoor terrace seating, and warm interior dining spaces.",
+        pdfFile: "GLENS BASAWESHVARANAGAR.pdf"
+      },
+      // 12. Frangipani Residency
+      {
+        id: "vis-frangipani-residence",
+        title: "Frangipani Residency",
+        category: "Luxury Private Estate",
+        setup: "Green Roof Terraces, Internal Courtyards & Exposed Concrete",
+        desc: "Photorealistic CGI series for Frangipani Residence showing extensive rooftop landscaping, reflecting pools, timber decking, and indoor-outdoor spatial transitions.",
+        pdfFile: "FRANGIPANI RESIDENCE.pdf"
+      },
+      // 13. Sarathy Residency
+      {
+        id: "vis-sarathy-residence",
+        title: "Sarathy Residency",
+        category: "Contemporary Villa Architecture",
+        setup: "Stacked Cuboidal Massing & Planter Balconies",
+        desc: "Modern multi-storey private villa visualization featuring staggered cantilevered balconies, integrated planter boxes, stilt parking, and detailed wood-and-stone textures.",
+        pdfFile: "SARATHY RESIDENCE.pdf"
+      },
+      // 14. Interior Renders
+      {
+        id: "vis-interior-designs",
+        title: "Interior Renders",
+        category: "Commercial & Residential Interior Staging",
+        setup: "Architectural Downlights, Acoustic Paneling & Custom Millwork",
+        desc: "Curated collection of residential and commercial interior spaces, highlighting bespoke millwork, Italian marble, warm textiles, and custom illumination.",
+        pdfFile: "INTERIOR RENDERS.PDF"
+      },
+      // 15. AB&T
+      {
+        id: "vis-abt",
+        title: "AB&T",
+        category: "High-Rise Commercial & Residential",
+        setup: "Exterior Glass Facade, Multi-Tier Balconies & Dusk Illumination",
+        desc: "Complete architectural visualization package for AB&T featuring angular cantilevered balcony perspectives, twilight illumination, and realistic exterior material texturing.",
+        pdfFile: "AB&T.pdf"
+      }
+    ];
+
+    const PORTFOLIO_DATA_EXPERIENCE = [
+      {
+        period: "May 2024 - Present",
+        role: "Architect",
+        company: "Urban Frame",
+        desc: "Managed Unicorn Terraces and Puravankara projects through design development, documentation, and coordination. Collaborated on conceptual designs and presentations for MSR and DNR Commercial. Contributed to two World Architecture Festival (WAF) 2025 finalist projects. Recognized as Employee of the Year 2025 (H1 Member)."
+      },
+      {
+        period: "Jan 2024 - May 2024",
+        role: "Architecture Intern",
+        company: "Khosla Associates (under Ar. Anamika Kalathingal)",
+        desc: "Assisted in design development, working drawings, mood boards, diagrams, and client coordination across 9 residential and commercial projects including Cibi & Arudhra Residence, Bhima Residence, and Westbridge Office."
+      },
+      {
+        period: "Apr 2023 - Jan 2024",
+        role: "Freelance Architectural Designer",
+        company: "Act of Design & Private Clients",
+        desc: "Developed 3D models, photorealistic renders, and facade concepts for residential and commercial projects including Glen's Bakehouse in Basaveshwara Nagar, Bengaluru."
+      }
+    ];
+
+    const PORTFOLIO_DATA_SKILLS = [
+      { name: "AutoCAD & Revit", icon: "compass" },
+      { name: "SketchUp & 3D Modeling", icon: "box" },
+      { name: "D5 Render & Lumion", icon: "sun" },
+      { name: "Photoshop & Illustrator", icon: "image" },
+      { name: "Working Drawings", icon: "file-text" },
+      { name: "Construction Detailing", icon: "layers" },
+      { name: "Design Development", icon: "edit-3" },
+      { name: "Site Coordination", icon: "check-circle" }
+    ];
+
+    /* DIRECT SWITCH TO HOMEPAGE PORTFOLIO SECTION */
+    function navigateToHomePortals() {
+      document.querySelectorAll('.page-view').forEach(view => view.classList.remove('active-route'));
+      document.getElementById('route-home').classList.add('active-route');
+      history.replaceState(null, null, '#/home');
+
+      const portalsSec = document.getElementById('home-portals');
+      if (portalsSec) {
+        portalsSec.scrollIntoView({ behavior: 'auto' });
+      }
+    }
+
+    /* FULLSCREEN LIGHTBOX LOGIC */
+    let currentZoom = 1;
+    let isPanning = false;
+    let startX = 0, startY = 0, translateX = 0, translateY = 0;
+
+    function openLightboxFromCanvas(canvas) {
+      const modal = document.getElementById('image-lightbox');
+      const img = document.getElementById('lightbox-img');
+      img.src = canvas.toDataURL('image/jpeg', 0.96);
+      resetLightboxZoom();
+      modal.classList.add('active');
+    }
+
+    function closeLightbox(e) {
+      if (e && e.target && e.target.closest('.lightbox-toolbar')) return;
+      document.getElementById('image-lightbox').classList.remove('active');
+    }
+
+    function zoomLightbox(delta) {
+      currentZoom = Math.min(Math.max(0.75, currentZoom + delta), 4.5);
+      applyLightboxTransform();
+    }
+
+    function resetLightboxZoom() {
+      currentZoom = 1;
+      translateX = 0;
+      translateY = 0;
+      applyLightboxTransform();
+    }
+
+    function applyLightboxTransform() {
+      const img = document.getElementById('lightbox-img');
+      img.style.transform = `translate(${translateX}px, ${translateY}px) scale(${currentZoom})`;
+    }
+
+    const stage = document.getElementById('lightbox-stage');
+    stage.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      const zoomStep = e.deltaY < 0 ? 0.25 : -0.25;
+      zoomLightbox(zoomStep);
+    }, { passive: false });
+
+    stage.addEventListener('mousedown', (e) => {
+      isPanning = true;
+      startX = e.clientX - translateX;
+      startY = e.clientY - translateY;
+    });
+
+    window.addEventListener('mousemove', (e) => {
+      if (!isPanning) return;
+      translateX = e.clientX - startX;
+      translateY = e.clientY - startY;
+      applyLightboxTransform();
+    });
+
+    window.addEventListener('mouseup', () => { isPanning = false; });
+    window.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeLightbox(); });
+
+    function navigateToHomeSection(sectionId) {
+      if (window.location.hash !== '#/home') {
+        window.location.hash = '#/home';
+        setTimeout(() => {
+          const sec = document.getElementById(sectionId);
+          if (sec) sec.scrollIntoView({ behavior: 'smooth' });
+        }, 300);
+      } else {
+        const sec = document.getElementById(sectionId);
+        if (sec) sec.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+
+    function router() {
+      const hash = window.location.hash.trim() || '#/home';
+      const parts = hash.replace(/^#\/?/, '').split('/');
+      const root = parts[0] || 'home';
+
+      document.querySelectorAll('.page-view').forEach(view => {
+        view.classList.remove('active-route');
+      });
+
+      document.querySelectorAll('.nav-links a').forEach(a => {
+        const routeAttr = a.getAttribute('data-route');
+        if (routeAttr === root) {
+          a.classList.add('active');
+        } else {
+          a.classList.remove('active');
+        }
+      });
+
+      if (root === 'home') {
+        document.getElementById('route-home').classList.add('active-route');
+      } else if (root === 'portfolio') {
+        document.getElementById('route-portfolio').classList.add('active-route');
+      } else if (root === 'projects') {
+        document.getElementById('route-projects').classList.add('active-route');
+      } else if (root === 'project') {
+        showProjectDetail(parts[1]);
+      } else if (root === 'visualization') {
+        document.getElementById('route-visualization').classList.add('active-route');
+      } else if (root === 'vis-project') {
+        showVisualizationDetail(parts[1]);
+      } else {
+        document.getElementById('route-home').classList.add('active-route');
+      }
+
+      window.scrollTo(0, 0);
+    }
+
+    /* PROJECT DETAIL VIEW (Clean Read-Only Display Driven by Code) */
+    async function showProjectDetail(id) {
+      const idx = projects.findIndex(p => p.id === id);
+      if (idx === -1) {
+        window.location.hash = '#/projects';
+        return;
+      }
+      const proj = projects[idx];
+
+      const badge = document.getElementById('proj-detail-badge');
+      if (badge) badge.textContent = proj.category || 'Project Dossier';
+      document.getElementById('proj-detail-title').textContent = proj.title;
+      document.getElementById('proj-detail-subtitle').textContent = proj.category;
+      document.getElementById('proj-detail-heading').textContent = proj.heading || "Project Concept & Scope";
+      document.getElementById('proj-detail-description').textContent = proj.desc;
+
+      // Render metadata fields dynamically from the code array
+      const grid = document.getElementById('proj-detail-meta-grid');
+      grid.innerHTML = '';
+
+      if (proj.metaFields && proj.metaFields.length > 0) {
+        proj.metaFields.forEach(field => {
+          const group = document.createElement('div');
+          group.className = 'sidebar-group';
+
+          const h5 = document.createElement('h5');
+          h5.textContent = field.label;
+
+          const p = document.createElement('p');
+          p.textContent = field.value;
+
+          group.appendChild(h5);
+          group.appendChild(p);
+          grid.appendChild(group);
+        });
+      }
+
+      const gallery = document.getElementById('proj-detail-gallery');
+      gallery.innerHTML = '';
+
+      document.getElementById('route-project-detail').classList.add('active-route');
+      await renderAllPdfPagesToContainer(proj.file, gallery, 2.2);
+    }
+
+    /* ARCHITECTURE VISUALIZATION DETAIL VIEW (Status Field Removed) */
+    async function showVisualizationDetail(id) {
+      const idx = architectureVisualizations.findIndex(v => v.id === id);
+      if (idx === -1) {
+        window.location.hash = '#/visualization';
+        return;
+      }
+      const vis = architectureVisualizations[idx];
+
+      const badge = document.getElementById('vis-detail-badge');
+      if (badge) badge.textContent = vis.category || 'Visualization Dossier';
+      document.getElementById('vis-detail-title').textContent = vis.title;
+      document.getElementById('vis-detail-subtitle').textContent = vis.category;
+      document.getElementById('vis-detail-description').textContent = vis.desc;
+      document.getElementById('vis-detail-category').textContent = vis.category;
+      document.getElementById('vis-detail-setup').textContent = vis.setup;
+      document.getElementById('vis-detail-scope').textContent = "Exterior & Interior 3D CGI";
+
+      // Status field is permanently omitted
+
+      const gallery = document.getElementById('vis-detail-gallery');
+      gallery.innerHTML = '';
+
+      document.getElementById('route-visualization-detail').classList.add('active-route');
+      await renderAllPdfPagesToContainer(vis.pdfFile, gallery, 2.2);
+    }
+
+    function initDataViews() {
+      // 1. Projects List (Ordered)
+      const projContainer = document.getElementById('projects-list-container');
+      projContainer.innerHTML = '';
+      projects.forEach(p => {
+        const card = document.createElement('a');
+        card.href = `#/project/${p.id}`;
+        card.className = 'item-card';
+
+        const mediaDiv = document.createElement('div');
+        mediaDiv.className = 'item-card-media';
+
+        if (p.coverImage) {
+          const img = document.createElement('img');
+          img.src = encodeURI(p.coverImage);
+          img.alt = p.title;
+          img.loading = "lazy";
+          mediaDiv.appendChild(img);
+        } else {
+          const canvas = document.createElement('canvas');
+          mediaDiv.appendChild(canvas);
+          renderPdfThumbnail(p.file, canvas, 1.0);
+        }
+
+        const bodyDiv = document.createElement('div');
+        bodyDiv.className = 'item-card-body';
+        bodyDiv.innerHTML = `
+          <div>
+            <span class="item-badge">${p.category}</span>
+            <h3 class="item-title">${p.title}</h3>
+            <p class="item-desc">${p.desc.substring(0, 130)}...</p>
+          </div>
+          <span class="item-cta">View Project Details &rarr;</span>
+        `;
+
+        card.appendChild(mediaDiv);
+        card.appendChild(bodyDiv);
+        projContainer.appendChild(card);
+      });
+
+      // 2. Architecture Visualization List (Ordered)
+      const visContainer = document.getElementById('visualization-list-container');
+      visContainer.innerHTML = '';
+      architectureVisualizations.forEach(v => {
+        const card = document.createElement('a');
+        card.href = `#/vis-project/${v.id}`;
+        card.className = 'item-card';
+
+        const mediaDiv = document.createElement('div');
+        mediaDiv.className = 'item-card-media';
+
+        const canvas = document.createElement('canvas');
+        mediaDiv.appendChild(canvas);
+        renderPdfThumbnail(v.pdfFile, canvas, 1.0);
+
+        const bodyDiv = document.createElement('div');
+        bodyDiv.className = 'item-card-body';
+        bodyDiv.innerHTML = `
+          <div>
+            <span class="item-badge">${v.category}</span>
+            <h3 class="item-title">${v.title}</h3>
+            <p class="item-desc">${v.desc.substring(0, 130)}...</p>
+          </div>
+          <span class="item-cta">Open Visualization Project &rarr;</span>
+        `;
+
+        card.appendChild(mediaDiv);
+        card.appendChild(bodyDiv);
+        visContainer.appendChild(card);
+      });
+
+      // 3. Timeline
+      document.getElementById('experience-container').innerHTML = PORTFOLIO_DATA_EXPERIENCE.map(e => `
+        <div class="timeline-item">
+          <div class="timeline-period">${e.period}</div>
+          <div class="timeline-role">${e.role}</div>
+          <div class="timeline-company">${e.company}</div>
+          <div class="timeline-desc">${e.desc}</div>
+        </div>
+      `).join('');
+
+      // 4. Skills
+      document.getElementById('skills-container').innerHTML = PORTFOLIO_DATA_SKILLS.map(s => `
+        <div class="skill-card">
+          <i data-feather="${s.icon}"></i>
+          <span>${s.name}</span>
+        </div>
+      `).join('');
+    }
+
+    function init3DHero() {
+      const canvas = document.getElementById('hero-canvas');
+      if (!canvas) return;
+
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 1000);
+      camera.position.set(0, 20, 50);
+
+      const renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: true });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+      const mainGroup = new THREE.Group();
+      scene.add(mainGroup);
+
+      const icosaGeo = new THREE.IcosahedronGeometry(14, 1);
+      const icosaWire = new THREE.WireframeGeometry(icosaGeo);
+      const icosaLines = new THREE.LineSegments(icosaWire, new THREE.LineBasicMaterial({
+        color: 0x9a653d,
+        transparent: true,
+        opacity: 0.28
+      }));
+      icosaLines.position.set(16, 4, -10);
+      mainGroup.add(icosaLines);
+
+      const planeGeo = new THREE.PlaneGeometry(80, 80, 36, 36);
+      const planeWire = new THREE.WireframeGeometry(planeGeo);
+      const waveMesh = new THREE.LineSegments(planeWire, new THREE.LineBasicMaterial({
+        color: 0xc8c3b8,
+        transparent: true,
+        opacity: 0.45
+      }));
+      waveMesh.rotation.x = -Math.PI / 2;
+      waveMesh.position.set(0, -10, -15);
+      mainGroup.add(waveMesh);
+
+      const particleCount = 100;
+      const particleGeo = new THREE.BufferGeometry();
+      const positions = new Float32Array(particleCount * 3);
+      for (let i = 0; i < particleCount * 3; i += 3) {
+        positions[i] = (Math.random() - 0.5) * 90;
+        positions[i + 1] = Math.random() * 30 - 5;
+        positions[i + 2] = (Math.random() - 0.5) * 70;
+      }
+      particleGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+      const particleMat = new THREE.PointsMaterial({
+        color: 0x9a653d,
+        size: 1.2,
+        transparent: true,
+        opacity: 0.55
+      });
+      const particleSystem = new THREE.Points(particleGeo, particleMat);
+      mainGroup.add(particleSystem);
+
+      let mouseX = 0, mouseY = 0;
+      window.addEventListener('mousemove', (e) => {
+        mouseX = (e.clientX / window.innerWidth - 0.5) * 2;
+        mouseY = (e.clientY / window.innerHeight - 0.5) * 2;
+      });
+
+      let clock = new THREE.Clock();
+      function animate() {
+        requestAnimationFrame(animate);
+        const time = clock.getElapsedTime();
+
+        icosaLines.rotation.x = time * 0.1;
+        icosaLines.rotation.y = time * 0.15;
+
+        const posAttr = planeGeo.attributes.position;
+        for (let i = 0; i < posAttr.count; i++) {
+          const u = posAttr.getX(i);
+          const v = posAttr.getY(i);
+          const z = Math.sin(u * 0.18 + time * 1.3) * 2.2 + Math.cos(v * 0.18 + time * 1.3) * 2.2;
+          posAttr.setZ(i, z);
+        }
+        posAttr.needsUpdate = true;
+
+        camera.position.x += (mouseX * 5 - camera.position.x) * 0.04;
+        camera.position.y += (-mouseY * 4 + 20 - camera.position.y) * 0.04;
+        camera.lookAt(0, 0, 0);
+
+        renderer.render(scene, camera);
+      }
+      animate();
+
+      window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      });
+    }
+
+    function handleFormSubmit(e) {
+      e.preventDefault();
+      alert("Inquiry submitted. Thank you!");
+      e.target.reset();
+    }
+
+    window.addEventListener('hashchange', router);
+
+    document.addEventListener("DOMContentLoaded", () => {
+      init3DHero();
+      initDataViews();
+      feather.replace();
+      router();
+    });
+  </script>
+</body>
+</html>
