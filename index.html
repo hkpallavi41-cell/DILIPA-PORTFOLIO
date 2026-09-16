@@ -320,7 +320,7 @@
       display: flex;
       flex-direction: column;
       gap: 3.5rem;
-      margin-bottom: 4rem;
+      margin-bottom: 2.5rem;
       width: 100%;
     }
     .project-overview-panel {
@@ -359,13 +359,13 @@
       font-weight: 500;
     }
 
-    /* FULL-BLEED ARCHITECTURAL IMAGE GALLERY */
+    /* TWO ADJACENT EDITORIAL PLATES */
     .detail-media-gallery {
-      display: flex;
-      flex-direction: column;
-      gap: 3.5rem;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 2rem;
       width: 100%;
-      margin: 1.5rem 0 3rem 0;
+      margin: 1.5rem 0 2rem 0;
     }
     .detail-media-figure {
       background: var(--surface);
@@ -374,6 +374,7 @@
       box-shadow: var(--shadow-base);
       overflow: hidden;
       width: 100%;
+      min-height: 360px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -393,6 +394,45 @@
       object-fit: contain;
     }
 
+    /* NEXT / PREVIOUS PROJECT NAVIGATION BAR */
+    .project-pagination-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 2.5rem 0 5rem 0;
+      border-top: 1px solid var(--border);
+      margin-top: 3rem;
+      gap: 1.5rem;
+    }
+    .pag-btn {
+      display: inline-flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      cursor: pointer;
+      text-decoration: none;
+      transition: transform var(--transition);
+      max-width: 45%;
+    }
+    .pag-btn:hover { transform: translateY(-3px); }
+    .pag-btn.next { align-items: flex-end; text-align: right; margin-left: auto; }
+    .pag-btn.prev { align-items: flex-start; text-align: left; }
+    .pag-label {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: var(--accent);
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .pag-title {
+      font-family: var(--font-display);
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
     .pdf-error-banner {
       width: 100%;
       padding: 2.5rem;
@@ -402,6 +442,7 @@
       color: #9f3a38;
       text-align: center;
       font-size: 0.95rem;
+      grid-column: span 2;
     }
 
     .static-section { padding: 7.5rem 0; border-bottom: 1px solid var(--border); }
@@ -574,7 +615,7 @@
     @media (max-width: 900px) {
       .container { padding: 0 1.5rem; }
       .about-layout, .contact-layout { grid-template-columns: 1fr; gap: 3rem; }
-      .catalog-grid { grid-template-columns: 1fr; gap: 2rem; }
+      .detail-media-gallery, .catalog-grid { grid-template-columns: 1fr; gap: 1.8rem; }
       .nav-links { display: none; }
       .static-section { padding: 5rem 0; }
     }
@@ -821,6 +862,9 @@
 
         <div class="detail-media-gallery" id="proj-detail-gallery"></div>
       </div>
+
+      <!-- Projects Next / Prev Footer -->
+      <nav class="project-pagination-bar" id="proj-pagination-bar"></nav>
     </div>
   </main>
 
@@ -875,6 +919,9 @@
 
         <div class="detail-media-gallery" id="vis-detail-gallery"></div>
       </div>
+
+      <!-- Visualization Next / Prev Footer -->
+      <nav class="project-pagination-bar" id="vis-pagination-bar"></nav>
     </div>
   </main>
 
@@ -895,9 +942,9 @@
   <script>
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-    /* FULL-BLEED ARCHITECTURAL SHEET RENDERER */
-    async function renderAllPdfPagesToContainer(pdfUrl, containerElement, scaleMultiplier = 1.45) {
-      containerElement.innerHTML = '<div style="padding: 40px; text-align: center; color: var(--text-muted); font-size: 1.05rem;">Streaming project presentation...</div>';
+    /* FAST 2-PAGE ADJACENT SPREAD RENDERER (Scale 1.0 for instant draw time) */
+    async function renderAllPdfPagesToContainer(pdfUrl, containerElement, scaleMultiplier = 1.05) {
+      containerElement.innerHTML = '<div style="grid-column: span 2; padding: 40px; text-align: center; color: var(--text-muted); font-size: 1.05rem;">Streaming project spreads...</div>';
 
       try {
         const loadingTask = pdfjsLib.getDocument({
@@ -914,7 +961,7 @@
         for (let pageNo = 1; pageNo <= pdf.numPages; pageNo++) {
           const fig = document.createElement('figure');
           fig.className = 'detail-media-figure';
-          fig.title = 'Click to inspect in high resolution';
+          fig.title = 'Click to inspect sheet in full resolution';
 
           const canvas = document.createElement('canvas');
           canvas.style.display = 'none';
@@ -940,15 +987,17 @@
             }
           };
 
-          if (pageNo === 1) {
+          // Render Page 1 and Page 2 immediately as the initial adjacent spread
+          if (pageNo <= 2) {
             await renderSheet();
           } else {
+            // Lazy load remaining sheets as the user scrolls
             const observer = new IntersectionObserver((entries, obs) => {
               if (entries[0].isIntersecting) {
                 renderSheet();
                 obs.disconnect();
               }
-            }, { rootMargin: '400px' });
+            }, { rootMargin: '350px' });
             observer.observe(fig);
           }
         }
@@ -957,7 +1006,7 @@
         containerElement.innerHTML = `
           <div class="pdf-error-banner">
             <strong>Drawing set unavailable:</strong> Could not load <code>${pdfUrl}</code>.<br>
-            <small>Verify that the file exists in your repository.</small>
+            <small>Verify that the file exists in your repository root.</small>
           </div>
         `;
       }
@@ -1403,7 +1452,7 @@
       window.scrollTo(0, 0);
     }
 
-    /* PROJECT DETAIL VIEW */
+    /* PROJECT DETAIL VIEW WITH TWO-PAGE GRID & PAGINATION */
     async function showProjectDetail(id) {
       const idx = projects.findIndex(p => p.id === id);
       if (idx === -1) {
@@ -1439,14 +1488,35 @@
         });
       }
 
+      // Populate Next / Previous Project Bar
+      const pagBar = document.getElementById('proj-pagination-bar');
+      const prevProj = idx > 0 ? projects[idx - 1] : null;
+      const nextProj = idx < projects.length - 1 ? projects[idx + 1] : null;
+
+      pagBar.innerHTML = `
+        ${prevProj ? `
+          <a href="#/project/${prevProj.id}" class="pag-btn prev">
+            <span class="pag-label"><i data-feather="arrow-left" style="width:14px;height:14px;"></i> Previous Project</span>
+            <span class="pag-title">${prevProj.title}</span>
+          </a>
+        ` : '<div></div>'}
+        ${nextProj ? `
+          <a href="#/project/${nextProj.id}" class="pag-btn next">
+            <span class="pag-label">Next Project <i data-feather="arrow-right" style="width:14px;height:14px;"></i></span>
+            <span class="pag-title">${nextProj.title}</span>
+          </a>
+        ` : '<div></div>'}
+      `;
+
       const gallery = document.getElementById('proj-detail-gallery');
       gallery.innerHTML = '';
 
       document.getElementById('route-project-detail').classList.add('active-route');
-      await renderAllPdfPagesToContainer(proj.file, gallery, 1.45);
+      feather.replace();
+      await renderAllPdfPagesToContainer(proj.file, gallery, 1.05);
     }
 
-    /* VISUALIZATION DETAIL VIEW */
+    /* VISUALIZATION DETAIL VIEW WITH TWO-PAGE GRID & PAGINATION */
     async function showVisualizationDetail(id) {
       const idx = architectureVisualizations.findIndex(v => v.id === id);
       if (idx === -1) {
@@ -1464,11 +1534,32 @@
       document.getElementById('vis-detail-setup').textContent = vis.setup;
       document.getElementById('vis-detail-scope').textContent = "Exterior & Interior 3D CGI";
 
+      // Populate Next / Previous Visualization Bar
+      const pagBar = document.getElementById('vis-pagination-bar');
+      const prevVis = idx > 0 ? architectureVisualizations[idx - 1] : null;
+      const nextVis = idx < architectureVisualizations.length - 1 ? architectureVisualizations[idx + 1] : null;
+
+      pagBar.innerHTML = `
+        ${prevVis ? `
+          <a href="#/vis-project/${prevVis.id}" class="pag-btn prev">
+            <span class="pag-label"><i data-feather="arrow-left" style="width:14px;height:14px;"></i> Previous Project</span>
+            <span class="pag-title">${prevVis.title}</span>
+          </a>
+        ` : '<div></div>'}
+        ${nextVis ? `
+          <a href="#/vis-project/${nextVis.id}" class="pag-btn next">
+            <span class="pag-label">Next Project <i data-feather="arrow-right" style="width:14px;height:14px;"></i></span>
+            <span class="pag-title">${nextVis.title}</span>
+          </a>
+        ` : '<div></div>'}
+      `;
+
       const gallery = document.getElementById('vis-detail-gallery');
       gallery.innerHTML = '';
 
       document.getElementById('route-visualization-detail').classList.add('active-route');
-      await renderAllPdfPagesToContainer(vis.pdfFile, gallery, 1.45);
+      feather.replace();
+      await renderAllPdfPagesToContainer(vis.pdfFile, gallery, 1.05);
     }
 
     function initDataViews() {
