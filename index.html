@@ -739,7 +739,7 @@
               </p>
             </div>
             <span class="item-cta" style="margin-top: 2rem;">Explore Visualization Hub &rarr;</span>
-          </a>
+        </a>
         </div>
       </div>
     </section>
@@ -1766,7 +1766,7 @@
       });
     }
 
-    /* CONTACT FORM SUBMISSION VIA FORMSPREE */
+    /* FIXED CONTACT FORM SUBMISSION VIA FORMSPREE */
     const CONTACT_FORM_ENDPOINT = "https://formspree.io/f/mrpbbgaw";
 
     async function handleFormSubmit(e) {
@@ -1795,14 +1795,14 @@
         });
 
         if (response.ok) {
-          statusEl.textContent = 'Message sent successfully. Thank you — I will get back to you soon.';
+          statusEl.textContent = 'Inquiry submitted. Thank you!';
           statusEl.classList.add('visible', 'success');
           form.reset();
         } else {
           const data = await response.json().catch(() => null);
           const errorMsg = (data && data.errors && data.errors.length)
             ? data.errors.map(err => err.message).join(', ')
-            : 'Something went wrong while sending your message. Please try again or email me directly.';
+            : 'Oops! There was a problem submitting your form.';
           statusEl.textContent = errorMsg;
           statusEl.classList.add('visible', 'error');
         }
